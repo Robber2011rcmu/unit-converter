@@ -1,15 +1,15 @@
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open('unit-converter-cache-v1').then((cache) => {
-      return cache.addAll([
+    caches.open('unit-converter-cache-v1').then((cache) =>
+      cache.addAll([
         './',
         './index.html',
         './manifest.json',
         './service-worker.js',
         './icon-192.png',
         './icon-512.png'
-      ]);
-    })
+      ])
+    )
   );
 });
 
