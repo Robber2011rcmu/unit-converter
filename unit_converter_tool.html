@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>膜厚單位換算器</title>
+  <link rel="manifest" href="manifest.json">
+  <style>
+    body {
+      font-family: "微軟正黑體", sans-serif;
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
+    }
+    input, select {
+      padding: 10px;
+      font-size: 1rem;
+      width: 100%;
+      margin-top: 10px;
+      box-sizing: border-box;
+    }
+    .result {
+      margin-top: 20px;
+      font-size: 1.1rem;
+      background: #f9f9f9;
+      padding: 15px;
+      border-radius: 8px;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <h2>📏 膜厚單位換算器</h2>
+
+  <label for="unit">選擇輸入單位：</label>
+  <select id="unit">
+    <option value="mm">mm（公釐）</option>
+    <option value="um">µm（微米）</option>
+    <option value="uin">µ”in（微英吋）</option>
+    <option value="inch">inch（英吋）</option>
+    <option value="strip">條（1條 = 10 µm）</option>
+  </select>
+
+  <label for="value">輸入數值：</label>
+  <input type="text" id="value" placeholder="請輸入數值">
+
+  <div class="result" id="output">請輸入數值進行換算</div>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js');
+    }
+
+    const input = document.getElementById("value");
+    const unit = document.getElementById("unit");
+    const output = document.getElementById("output");
+
+    function round(num) {
+      return Math.round(num * 100000) / 100000;
+    }
+
+    function convert() {
+      const val = parseFloat(input.value);
+      const selected = unit.value;
+      if (isNaN(val)) {
+        output.innerHTML = "請輸入有效數值";
+        return;
+      }
+
+      let mm, um, uin, inch, strip;
+
+      switch (selected) {
+        case "mm":
+          mm = val;
+          um = mm * 1000;
+          break;
+        case "um":
+          um = val;
+          break;
+        case "uin":
+          um = val * 0.0254;
+          break;
+        case "inch":
+          um = val * 25400;
+          break;
+        case "strip":
+          um = val * 10;
+          break;
+      }
+
+      mm = um / 1000;
+      uin = um * 39.3701;
+      inch = um * 0.0000393701;
+      strip = um / 10;
+
+      output.innerHTML = `
+        ✅ 換算結果如下：<br><br>
+        ● mm（公釐）：<b>${round(mm)}</b><br>
+        ● µm（微米）：<b>${round(um)}</b><br>
+        ● µ”in（微英吋）：<b>${round(uin)}</b><br>
+        ● inch（英吋）：<b>${round(inch)}</b><br>
+        ● 條（1條 = 10µm）：<b>${round(strip)}</b>
+      `;
+    }
+
+    input.addEventListener("input", convert);
+    input.addEventListener("change", convert);
+    unit.addEventListener("change", convert);
+  </script>
+</body>
+</html>
