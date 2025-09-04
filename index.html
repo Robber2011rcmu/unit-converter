@@ -7,88 +7,131 @@
   <style>
     body{font-family:"微軟正黑體",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:#f4f8fc;margin:0;padding:24px;display:flex;justify-content:center}
     .wrap{width:min(760px,100%);background:#fff;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.08);padding:20px}
-    h1{text-align:center;color:#317EFB;margin:0 0 10px}
-    .sub{text-align:center;color:#666;margin-bottom:16px}
+    h1{margin:0 0 8px;text-align:center;color:#317EFB;font-size:1.5rem}
+    .sub{color:#6b7280;text-align:center;margin-bottom:16px}
     .grid{display:grid;gap:14px}
     @media (min-width:680px){.grid{grid-template-columns:1fr 1fr}}
     .row{display:flex;flex-direction:column;gap:6px}
     label{font-weight:600}
-    input{padding:10px;border:1px solid #ccc;border-radius:8px;font-size:1rem}
-    input:focus{border-color:#317EFB;outline:none;box-shadow:0 0 0 2px rgba(49,126,251,.2)}
+    input{padding:12px;border:1px solid #e5e7eb;border-radius:10px;font-size:1.05rem}
+    input:focus{outline:none;border-color:#317EFB;box-shadow:0 0 0 3px rgba(49,126,251,.15)}
+    .hint{font-size:.9rem;color:#6b7280}
   </style>
 </head>
 <body>
   <div class="wrap">
     <h1>📏 膜厚單位換算器｜Thickness Unit Converter</h1>
-    <div class="sub">五欄任填，其他自動同步</div>
+    <div class="sub">五欄任填，其他自動同步｜Enter any field, others update automatically</div>
+
     <div class="grid">
-      <div class="row"><label>mm</label><input id="mm" type="text"></div>
-      <div class="row"><label>µm</label><input id="um" type="text"></div>
-      <div class="row"><label>µ”in</label><input id="uin" type="text"></div>
-      <div class="row"><label>inch</label><input id="inch" type="text"></div>
-      <div class="row"><label>條</label><input id="strip" type="text"></div>
+      <!-- 1. µm -->
+      <div class="row">
+        <label for="um">µm（微米 / micrometer）</label>
+        <input id="um" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 20">
+        <div class="hint">基準單位 Base unit</div>
+      </div>
+
+      <!-- 2. µ”in -->
+      <div class="row">
+        <label for="uin">µ”in（微英吋 / microinch）</label>
+        <input id="uin" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 335.43">
+        <div class="hint">1 µm = 1,000,000 / 25,400 ≈ 39.37007874 µ”in</div>
+      </div>
+
+      <!-- 3. inch -->
+      <div class="row">
+        <label for="inch">inch（英吋 / inch）</label>
+        <input id="inch" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 0.0008">
+        <div class="hint">1 inch = 25,400 µm（exact）</div>
+      </div>
+
+      <!-- 4. 條 -->
+      <div class="row">
+        <label for="strip">條（strip）</label>
+        <input id="strip" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 2.54">
+        <div class="hint">1 條 = 10 µm</div>
+      </div>
+
+      <!-- 5. mm（移到最後） -->
+      <div class="row">
+        <label for="mm">mm（公釐 / millimeter）</label>
+        <input id="mm" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 0.02">
+        <div class="hint">1 mm = 1000 µm</div>
+      </div>
     </div>
   </div>
 
-<script>
-document.addEventListener("DOMContentLoaded", function(){
+  <script>
+    // —— 常數（相容寫法）——
+    var UM_PER_MM      = 1000;              // µm per mm
+    var UM_PER_INCH    = 25400;             // µm per inch (exact)
+    var MICROIN_PER_UM = 1000000 / UM_PER_INCH; // µ" in per µm
+    var UM_PER_STRIP   = 10;                // µm per 條
+    var DECIMALS       = 5;
 
-  var UM_PER_MM = 1000;
-  var UM_PER_INCH = 25400;
-  var MICROIN_PER_UM = 1000000 / UM_PER_INCH;
-  var UM_PER_STRIP = 10;
-  var DECIMALS = 5;
+    function $(id){ return document.getElementById(id); }
+    var el = { mm: $('mm'), um: $('um'), uin: $('uin'), inch: $('inch'), strip: $('strip') };
 
-  var el = {
-    mm: document.getElementById("mm"),
-    um: document.getElementById("um"),
-    uin: document.getElementById("uin"),
-    inch: document.getElementById("inch"),
-    strip: document.getElementById("strip")
-  };
-
-  function toNumber(val){ return parseFloat(val); }
-  function fmt(n){ return isFinite(n) ? n.toFixed(DECIMALS).replace(/\\.0+$/,'').replace(/(\\.\\d*?)0+$/,'$1') : ''; }
-
-  function fillFromUm(um){
-    el.mm.value    = fmt(um / UM_PER_MM);
-    el.um.value    = fmt(um);
-    el.uin.value   = fmt(um * MICROIN_PER_UM);
-    el.inch.value  = fmt(um / UM_PER_INCH);
-    el.strip.value = fmt(um / UM_PER_STRIP);
-  }
-
-  function toUm(which, v){
-    if(which==="mm") return v*UM_PER_MM;
-    if(which==="um") return v;
-    if(which==="uin") return v*0.0254;
-    if(which==="inch") return v*UM_PER_INCH;
-    if(which==="strip") return v*UM_PER_STRIP;
-  }
-
-  var updating=false;
-  function handle(which){
-    if(updating) return;
-    updating=true;
-    var v = toNumber(el[which].value);
-    if(!isNaN(v)){
-      var um = toUm(which,v);
-      fillFromUm(um);
-      el[which].value = el[which].value; // 保持輸入中格式
+    function toNumber(raw){
+      if (typeof raw !== 'string') raw = String(raw == null ? '' : raw);
+      // 移除逗號/空白、全形數字轉半形
+      raw = raw.replace(/[, \t\r\n]/g,'').replace(/[０-９．]/g,function(ch){ return ch==='．'?'.':String.fromCharCode(ch.charCodeAt(0)-0xFF10+0x30); });
+      var n = Number(raw);
+      return isFinite(n) ? n : NaN;
     }
-    updating=false;
-  }
+    function fmt(n){
+      if (!isFinite(n)) return '';
+      var s = n.toFixed(DECIMALS);
+      s = s.replace(/(\.\d*?[1-9])0+$/,'$1').replace(/\.0+$/,'').replace(/\.$/,'');
+      return s;
+    }
 
-  ["mm","um","uin","inch","strip"].forEach(function(k){
-    ["input","change","keyup"].forEach(function(ev){
-      el[k].addEventListener(ev, function(){ handle(k); });
-    });
-  });
+    function fillFromUm(um){
+      el.um.value    = fmt(um);
+      el.uin.value   = fmt(um * MICROIN_PER_UM);
+      el.inch.value  = fmt(um / UM_PER_INCH);
+      el.strip.value = fmt(um / UM_PER_STRIP);
+      el.mm.value    = fmt(um / UM_PER_MM);
+    }
 
-  // 預設範例：20 µm
-  fillFromUm(20);
+    function toUm(which, v){
+      if (which === 'um')   return v;
+      if (which === 'uin')  return v * 0.0254;     // 1 µ" in = 0.0254 µm
+      if (which === 'inch') return v * UM_PER_INCH;
+      if (which === 'strip')return v * UM_PER_STRIP;
+      if (which === 'mm')   return v * UM_PER_MM;
+      return NaN;
+    }
 
-});
-</script>
+    var updating = false;
+    function handle(which){
+      if (updating) return;
+      updating = true;
+      var v = toNumber(el[which].value);
+      if (isFinite(v)) {
+        fillFromUm(toUm(which, v));
+        // 保留正在輸入欄位的原字串（避免游標跳動）
+        el[which].value = el[which].value;
+      }
+      updating = false;
+    }
+
+    function bindAll(){
+      ['um','uin','inch','strip','mm'].forEach(function(k){
+        ['input','change','keyup','paste','blur'].forEach(function(ev){
+          el[k].addEventListener(ev, function(){ handle(k); });
+        });
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function(){ bindAll(); fillFromUm(20); });
+    } else {
+      bindAll(); fillFromUm(20);
+    }
+
+    // ★ 若不想預設顯示示範值，請改成：
+    // document.addEventListener('DOMContentLoaded', function(){ bindAll(); /* 不呼叫 fillFromUm */ });
+  </script>
 </body>
 </html>
