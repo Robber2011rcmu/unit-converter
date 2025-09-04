@@ -1,34 +1,39 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>膜厚單位換算器</title>
-  <link rel="manifest" href="manifest.json">
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-192.png">
-<link rel="icon" href="icon-192.png">
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="icon" href="icon-192.png" />
   <style>
     body {
       font-family: "微軟正黑體", sans-serif;
-      padding: 20px;
-      max-width: 600px;
-      margin: auto;
+      background:#f4f8fc;
+      padding:20px;
+      max-width:600px;
+      margin:auto;
+    }
+    h2 {
+      text-align:center;
+      color:#317EFB;
     }
     input, select {
-      padding: 10px;
-      font-size: 1rem;
-      width: 100%;
-      margin-top: 10px;
-      box-sizing: border-box;
+      padding:10px;
+      font-size:1rem;
+      width:100%;
+      margin-top:10px;
+      box-sizing:border-box;
     }
     .result {
-      margin-top: 20px;
-      font-size: 1.1rem;
-      background: #f9f9f9;
-      padding: 15px;
-      border-radius: 8px;
-      line-height: 1.6;
+      margin-top:20px;
+      font-size:1.1rem;
+      background:#fff;
+      padding:15px;
+      border-radius:8px;
+      line-height:1.6;
+      box-shadow:0 0 10px rgba(0,0,0,0.1);
     }
   </style>
 </head>
@@ -58,43 +63,27 @@
     const unit = document.getElementById("unit");
     const output = document.getElementById("output");
 
-    function round(num) {
-      return Math.round(num * 100000) / 100000;
-    }
+    function round(n){ return Math.round(n*100000)/100000; }
 
     function convert() {
       const val = parseFloat(input.value);
       const selected = unit.value;
-      if (isNaN(val)) {
-        output.innerHTML = "請輸入有效數值";
-        return;
-      }
+      if (isNaN(val)) { output.innerHTML = "請輸入有效數值"; return; }
 
       let mm, um, uin, inch, strip;
 
       switch (selected) {
-        case "mm":
-          mm = val;
-          um = mm * 1000;
-          break;
-        case "um":
-          um = val;
-          break;
-        case "uin":
-          um = val * 0.0254;
-          break;
-        case "inch":
-          um = val * 25400;
-          break;
-        case "strip":
-          um = val * 10;
-          break;
+        case "mm":   mm = val; um = mm * 1000; break;
+        case "um":   um = val; break;
+        case "uin":  um = val * 0.0254; break;
+        case "inch": um = val * 25400; break;
+        case "strip":um = val * 10; break;
       }
 
-      mm = um / 1000;
-      uin = um * 39.3701;
+      mm   = um / 1000;
+      uin  = um * 39.3701;
       inch = um * 0.0000393701;
-      strip = um / 10;
+      strip= um / 10;
 
       output.innerHTML = `
         ✅ 換算結果如下：<br><br>
@@ -102,8 +91,7 @@
         ● µm（微米）：<b>${round(um)}</b><br>
         ● µ”in（微英吋）：<b>${round(uin)}</b><br>
         ● inch（英吋）：<b>${round(inch)}</b><br>
-        ● 條（1條 = 10µm）：<b>${round(strip)}</b>
-      `;
+        ● 條（1條 = 10µm）：<b>${round(strip)}</b>`;
     }
 
     input.addEventListener("input", convert);
